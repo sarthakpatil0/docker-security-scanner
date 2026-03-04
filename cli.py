@@ -71,6 +71,19 @@ Examples:
     else:
         print_console_report(results)
 
+    # --- CI/CD: exit with code 1 if CRITICAL issues found ---
+    # GitHub Actions reads this exit code: 1 = FAIL, 0 = PASS
+    critical_count = 0
+    img  = results.get("image_scan") or {}
+    lint = results.get("lint_results") or {}
+    if img.get("status")  == "ok":
+        critical_count += img.get("summary",  {}).get("CRITICAL", 0)
+    if lint.get("status") == "ok":
+        critical_count += lint.get("summary", {}).get("CRITICAL", 0)
+
+    if critical_count > 0:
+        sys.exit(1)   # tells GitHub Actions: BUILD FAILED
+
 
 if __name__ == "__main__":
     main()

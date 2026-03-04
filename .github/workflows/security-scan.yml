@@ -1,0 +1,65 @@
+name: Docker Security Scan
+
+# Runs automatically on every push and pull request
+on: [push, pull_request]
+
+jobs:
+  dockerfile-lint:
+    name: Lint Dockerfile for Security Issues
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1 - Download your repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2 - Install Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # Step 3 - Run your Dockerfile linter
+      # This will exit with code 1 if CRITICAL issues are found
+      - name: Lint Dockerfile.bad (demo)
+        run: python cli.py --dockerfile sample/Dockerfile.bad
+
+      # Step 4 - Also save an HTML report as a downloadable artifact
+      - name: Generate HTML Report
+        run: python cli.py --dockerfile sample/Dockerfile.bad --output security-report.html
+        continue-on-error: true   # generate report even if scan fails
+
+      # Step 5 - Upload the HTML report so you can download it from GitHub
+      - name: Upload Security Report
+        uses: actions/upload-artifact@v3
+        if: always()              # upload even if the scan failed
+        with:
+          name: security-report
+          path: security-report.html
+
+  image-scan:
+    name: Scan Docker Image for CVEs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Install Trivy on the GitHub Actions runner
+      - name: Install Trivy
+        run: |
+          sudo apt-get install -y wget apt-transport-https gnupg
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" \
+            | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update && sudo apt-get install -y trivy
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # Scan a real image — change nginx:latest to your own image when ready
+      - name: Scan Docker Image
+        run: python cli.py --image nginx:latest
+        continue-on-error: true   # don't fail the whole pipeline on image CVEs (yet)
