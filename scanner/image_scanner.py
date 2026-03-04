@@ -54,13 +54,14 @@ def scan_image(image_name: str) -> dict:
         result = subprocess.run(
             [
                 "trivy", "image",
-                "--format", "json",   # machine-readable output
-                "--quiet",            # suppress progress bar
+                "--format", "json",
+                "--quiet",
                 image_name
             ],
             capture_output=True,
-            text=True,
-            timeout=300             # 5 minute max
+            encoding="utf-8",     # force UTF-8 on Windows
+            errors="replace",     # replace unreadable chars instead of crashing
+            timeout=300
         )
     except subprocess.TimeoutExpired:
         return {

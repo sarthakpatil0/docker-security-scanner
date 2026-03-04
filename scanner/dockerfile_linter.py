@@ -184,14 +184,15 @@ RULES = [
         "scope":    "line",
     },
     {
-        "id":       "DF016",
+        "id":       "DF014",
         "severity": "CRITICAL",
         "title":    "AWS Access Key detected",
-        "pattern":  r"AKIA[0-9A-Z]{16}",
+        "pattern":  r"(?<![A-Z0-9])(AKIA|ASIA|AROA|AIPA)[A-Z0-9]{16}(?![A-Z0-9])",
         "message":  "AWS key hardcoded in Dockerfile — rotate it immediately.",
-        "fix":      "Use IAM roles or pass via environment at runtime.",
+        "fix":      "Use IAM roles or pass via environment variables at runtime.",
         "scope":    "line",
     },
+
 ]
 
 

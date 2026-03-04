@@ -130,27 +130,6 @@ def _print_summary_bar(summary: dict):
     print()
 
 
-def calculate_risk_score(summary: dict) -> int:
-    score = 100
-    score -= summary.get("CRITICAL", 0) * 20
-    score -= summary.get("HIGH", 0)     * 10
-    score -= summary.get("MEDIUM", 0)   * 5
-    score -= summary.get("LOW", 0)      * 2
-    return max(0, score)   # never below 0
-
-
-
-    max_possible = (
-        summary.get("CRITICAL", 0) +
-        summary.get("HIGH", 0) +
-        summary.get("MEDIUM", 0) +
-        summary.get("LOW", 0)
-    ) * 10  # assume worst case all are critical
-
-    score = 100 - (total_weight / max_possible) * 100
-    return round(max(0, score))
-
-
 def _print_verdict(results: dict):
     critical = 0
     high     = 0
@@ -180,12 +159,34 @@ def _print_verdict(results: dict):
 def generate_report(results: dict, output_path: str):
     """Generate a self-contained HTML security report."""
 
-    scan_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    scan_time  = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     image_name = results.get("image", "N/A")
-    dockerfile  = results.get("dockerfile", "N/A")
+    dockerfile = results.get("dockerfile", "N/A")
+    risk       = results.get("risk", {})
 
     img  = results.get("image_scan") or {}
     lint = results.get("lint_results") or {}
+
+    # Build risk score section
+    score       = risk.get("score", "N/A")
+    grade       = risk.get("grade", "?")
+    label       = risk.get("label", "Unknown")
+    risk_color  = risk.get("color", "#8b949e")
+    risk_desc   = risk.get("description", "")
+    avg_cvss    = risk.get("avg_cvss", 0)
+    filled      = int(score / 5) * 5 if isinstance(score, int) else 0
+    rec_rows    = "".join(
+        f"<tr><td style='color:#58a6ff;font-weight:700'>#{r['priority']}</td>"
+        f"<td>{_esc(r['action'])}</td>"
+        f"<td style='color:#8b949e'>{_esc(r['why'])}</td></tr>"
+        for r in risk.get("recommendations", [])
+    )
+    b            = risk.get("breakdown", {})
+    sev_val      = b.get("severity_penalty",   {}).get("value", 0) if isinstance(b.get("severity_penalty"),   dict) else b.get("severity_penalty",   0)
+    cvss_val     = b.get("cvss_penalty",        {}).get("value", 0) if isinstance(b.get("cvss_penalty"),        dict) else b.get("cvss_penalty",        0)
+    fix_val      = b.get("fixability_penalty",  {}).get("value", 0) if isinstance(b.get("fixability_penalty"), dict) else b.get("fixability_penalty",  0)
+    mult_val     = b.get("dockerfile_multiplier", {}).get("value", 1.0)
+    total_pen    = b.get("total_penalty", 0)
 
     # Build vuln rows
     vuln_rows = ""
@@ -277,7 +278,20 @@ def generate_report(results: dict, output_path: str):
   .meta-card {{ background:#161b22; border:1px solid #30363d; border-radius:8px; padding:1rem; }}
   .meta-card .label {{ color:#8b949e; font-size:.75rem; margin-bottom:.3rem; }}
   .meta-card .value {{ color:#f0f6fc; font-weight:600; }}
-  .empty {{ color:#8b949e; font-style:italic; padding:1rem 0; }}
+  .risk-card {{ background:#161b22; border:2px solid {risk_color}; border-radius:12px; padding:1.5rem 2rem; display:flex; gap:2rem; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; }}
+  .risk-score-circle {{ text-align:center; min-width:100px; }}
+  .risk-score-number {{ font-size:3.5rem; font-weight:900; color:{risk_color}; line-height:1; }}
+  .risk-score-grade  {{ font-size:1.1rem; color:{risk_color}; font-weight:700; margin-top:.3rem; }}
+  .risk-bar-wrap {{ flex:1; min-width:200px; }}
+  .risk-bar-bg   {{ background:#21262d; border-radius:99px; height:14px; overflow:hidden; margin:.5rem 0; }}
+  .risk-bar-fill {{ height:100%; border-radius:99px; background:{risk_color}; width:{filled}%; transition:width 1s ease; }}
+  .risk-label    {{ font-size:1.3rem; font-weight:800; color:{risk_color}; }}
+  .risk-desc     {{ color:#8b949e; font-size:.9rem; margin-top:.3rem; }}
+  .risk-meta     {{ display:flex; gap:1.5rem; margin-top:.8rem; font-size:.85rem; color:#8b949e; }}
+  .breakdown-grid {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.8rem; margin:.8rem 0; }}
+  .breakdown-card {{ background:#0d1117; border:1px solid #30363d; border-radius:8px; padding:.8rem 1rem; }}
+  .breakdown-card .blabel {{ font-size:.7rem; color:#8b949e; margin-bottom:.2rem; }}
+  .breakdown-card .bvalue {{ font-size:1.2rem; font-weight:700; color:#f0f6fc; }}
 </style>
 </head>
 <body>
@@ -294,6 +308,52 @@ def generate_report(results: dict, output_path: str):
       <div class="meta-card"><div class="label">VULNERABILITIES</div><div class="value">{total_vulns}</div></div>
       <div class="meta-card"><div class="label">LINT ISSUES</div><div class="value">{total_lint}</div></div>
     </div>
+  </section>
+
+  <!-- Risk Score -->
+  <section>
+    <h2>🎯 Security Risk Score</h2>
+    <div class="risk-card">
+      <div class="risk-score-circle">
+        <div class="risk-score-number">{score}</div>
+        <div class="risk-score-grade">Grade {grade}</div>
+      </div>
+      <div class="risk-bar-wrap">
+        <div class="risk-label">{label}</div>
+        <div class="risk-bar-bg"><div class="risk-bar-fill"></div></div>
+        <div class="risk-desc">{risk_desc}</div>
+        <div class="risk-meta">
+          <span>Avg CVSS: <b style="color:#f0f6fc">{avg_cvss}</b></span>
+          <span>Total Vulns: <b style="color:#f0f6fc">{total_vulns}</b></span>
+          <span>Dockerfile Multiplier: <b style="color:#f0f6fc">×{mult_val}</b></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="breakdown-grid">
+      <div class="breakdown-card">
+        <div class="blabel">SEVERITY PENALTY</div>
+        <div class="bvalue">-{sev_val} pts</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="blabel">CVSS PENALTY</div>
+        <div class="bvalue">-{cvss_val} pts</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="blabel">FIXABILITY PENALTY</div>
+        <div class="bvalue">-{fix_val} pts</div>
+      </div>
+      <div class="breakdown-card">
+        <div class="blabel">TOTAL PENALTY</div>
+        <div class="bvalue">{total_pen} pts</div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:1.2rem">💡 Recommendations</h2>
+    <table>
+      <thead><tr><th>#</th><th>Action</th><th>Why</th></tr></thead>
+      <tbody>{rec_rows}</tbody>
+    </table>
   </section>
 
   <!-- Image Vulnerabilities -->

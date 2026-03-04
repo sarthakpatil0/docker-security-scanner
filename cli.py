@@ -18,6 +18,7 @@ import sys
 from scanner.image_scanner import scan_image
 from scanner.dockerfile_linter import lint_dockerfile
 from scanner.report_generator import generate_report, print_console_report
+from scanner.risk_scorer import calculate_risk_score, print_risk_score
 
 
 def main():
@@ -62,6 +63,13 @@ Examples:
         results["lint_results"] = lint_dockerfile(args.dockerfile)
 
     # --- Output ---
+    # --- Calculate Risk Score ---
+    risk = calculate_risk_score(
+        results.get("image_scan"),
+        results.get("lint_results")
+    )
+    results["risk"] = risk
+
     if args.json:
         import json
         print(json.dumps(results, indent=2))
@@ -70,6 +78,7 @@ Examples:
         print(f"\n✅ HTML report saved to: {args.output}")
     else:
         print_console_report(results)
+        print_risk_score(risk)
 
     # --- CI/CD: exit with code 1 if CRITICAL issues found ---
     # GitHub Actions reads this exit code: 1 = FAIL, 0 = PASS
