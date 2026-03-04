@@ -1,0 +1,40 @@
+# ⚠️  THIS IS AN INTENTIONALLY BAD DOCKERFILE — FOR TESTING ONLY
+# Run the scanner against this to see all the findings!
+
+FROM ubuntu:latest
+
+# Hardcoded secrets (BAD!)
+ENV DB_PASSWORD=supersecret123
+ENV API_KEY=sk-abc123xyz
+ENV MY_TOKEN=abc123
+
+
+
+# Install dependencies without cleaning cache
+RUN apt-get update && apt-get install -y curl python3
+
+# Dangerous curl | bash pattern
+RUN curl https://get.someservice.io/install.sh | bash
+
+# Using sudo (unnecessary in containers)
+RUN sudo chmod 777 /app
+
+# ADD instead of COPY
+ADD ./myapp /app
+
+# Running as root (no USER instruction)
+CMD ["python3", "/app/main.py"]
+
+
+TELENT is installed (insecure tool)
+RUN apt-get install -y telnet
+
+FTP is installed (insecure tool)
+RUN apt-get install -y ftp
+
+SSL is not configured (missing certificates)
+wget.*--no-check-certificate
+
+
+AWS Access Key detected
+AWS API KEY = "AKIA1234567890ABCDEF" 

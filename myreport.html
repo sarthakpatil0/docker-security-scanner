@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docker Security Report — None</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #c9d1d9; }
+  header { background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 2rem 2.5rem; border-bottom: 1px solid #30363d; }
+  header h1 { font-size: 1.8rem; color: #58a6ff; }
+  header p  { color: #8b949e; margin-top: .3rem; font-size: .9rem; }
+  .verdict  { display: inline-block; margin-top: 1rem; padding: .5rem 1.2rem; border-radius: 6px; font-weight: 700; font-size: 1rem; }
+  .verdict.pass { background: #0d3a1e; color: #3fb950; border: 1px solid #3fb950; }
+  .verdict.warn { background: #3a2900; color: #e3b341; border: 1px solid #e3b341; }
+  .verdict.fail { background: #3a0d0d; color: #f85149; border: 1px solid #f85149; }
+  main { padding: 2rem 2.5rem; max-width: 1400px; }
+  section { margin-bottom: 2.5rem; }
+  h2 { font-size: 1.2rem; color: #f0f6fc; border-bottom: 1px solid #30363d; padding-bottom: .6rem; margin-bottom: 1rem; }
+  .pills { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .pill { padding: .25rem .75rem; border-radius: 20px; font-size: .8rem; font-weight: 700; }
+  .CRITICAL { background:#3a0d0d; color:#f85149; border:1px solid #f85149; }
+  .HIGH     { background:#3a1500; color:#f0883e; border:1px solid #f0883e; }
+  .MEDIUM   { background:#3a2900; color:#e3b341; border:1px solid #e3b341; }
+  .LOW      { background:#0d2a3a; color:#58a6ff; border:1px solid #58a6ff; }
+  .INFO     { background:#1a1a1a; color:#8b949e; border:1px solid #8b949e; }
+  .UNKNOWN  { background:#1a1a1a; color:#8b949e; border:1px solid #8b949e; }
+  table { width:100%; border-collapse:collapse; font-size:.85rem; }
+  th { background:#161b22; color:#8b949e; padding:.6rem .8rem; text-align:left; font-weight:600; border-bottom:2px solid #30363d; }
+  td { padding:.55rem .8rem; border-bottom:1px solid #21262d; vertical-align:top; }
+  tr:hover td { background:#161b22; }
+  code { background:#161b22; padding:.1rem .35rem; border-radius:4px; font-size:.82rem; color:#79c0ff; }
+  a { color:#58a6ff; }
+  .fix-col { color:#3fb950; font-size:.8rem; }
+  .meta { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .meta-card { background:#161b22; border:1px solid #30363d; border-radius:8px; padding:1rem; }
+  .meta-card .label { color:#8b949e; font-size:.75rem; margin-bottom:.3rem; }
+  .meta-card .value { color:#f0f6fc; font-weight:600; }
+  .empty { color:#8b949e; font-style:italic; padding:1rem 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🔒 Docker Security Report</h1>
+  <p>Generated on 2026-03-02 15:16:24</p>
+  <div class="verdict fail">⛔ FAIL — 4 critical issue(s)</div>
+</header>
+<main>
+  <section>
+    <div class="meta">
+      <div class="meta-card"><div class="label">IMAGE</div><div class="value">None</div></div>
+      <div class="meta-card"><div class="label">DOCKERFILE</div><div class="value">sample/Dockerfile.bad</div></div>
+      <div class="meta-card"><div class="label">VULNERABILITIES</div><div class="value">0</div></div>
+      <div class="meta-card"><div class="label">LINT ISSUES</div><div class="value">11</div></div>
+    </div>
+  </section>
+
+  <!-- Image Vulnerabilities -->
+  <section>
+    <h2>📦 Image Vulnerabilities</h2>
+    <div class="pills"><span style="color:#3fb950">✅ None found</span></div>
+    <p class='empty'>No vulnerabilities found ✅</p>
+  </section>
+
+  <!-- Dockerfile Findings -->
+  <section>
+    <h2>📋 Dockerfile Best Practice Findings</h2>
+    <div class="pills"><span class="pill CRITICAL">CRITICAL: 4</span><span class="pill HIGH">HIGH: 3</span><span class="pill MEDIUM">MEDIUM: 2</span><span class="pill LOW">LOW: 1</span><span class="pill INFO">INFO: 1</span></div>
+    
+    <table>
+      <thead><tr>
+        <th>Severity</th><th>Rule</th><th>Issue</th><th>Location</th><th>How to Fix</th>
+      </tr></thead>
+      <tbody>
+            <tr>
+                <td><span class="pill CRITICAL">CRITICAL</span></td>
+                <td><b>[DF005]</b> Hardcoded secret in ENV</td>
+                <td>Secrets baked into ENV instructions are visible in the image layers forever.</td>
+                <td>Line 7<br><code>ENV DB_PASSWORD=supersecret123</code></td>
+                <td class="fix-col">Use Docker secrets or pass secrets at runtime:  docker run -e SECRET=$SECRET</td>
+            </tr>
+            <tr>
+                <td><span class="pill CRITICAL">CRITICAL</span></td>
+                <td><b>[DF005]</b> Hardcoded secret in ENV</td>
+                <td>Secrets baked into ENV instructions are visible in the image layers forever.</td>
+                <td>Line 8<br><code>ENV API_KEY=sk-abc123xyz</code></td>
+                <td class="fix-col">Use Docker secrets or pass secrets at runtime:  docker run -e SECRET=$SECRET</td>
+            </tr>
+            <tr>
+                <td><span class="pill CRITICAL">CRITICAL</span></td>
+                <td><b>[DF005]</b> Hardcoded secret in ENV</td>
+                <td>Secrets baked into ENV instructions are visible in the image layers forever.</td>
+                <td>Line 9<br><code>ENV MY_TOKEN=abc123</code></td>
+                <td class="fix-col">Use Docker secrets or pass secrets at runtime:  docker run -e SECRET=$SECRET</td>
+            </tr>
+            <tr>
+                <td><span class="pill CRITICAL">CRITICAL</span></td>
+                <td><b>[DF007]</b> curl | bash anti-pattern</td>
+                <td>Piping a remote script directly to a shell is a major supply-chain risk.</td>
+                <td>Line 15<br><code>RUN curl https://get.someservice.io/install.sh | bash</code></td>
+                <td class="fix-col">Download the script first, verify its checksum, then execute it.</td>
+            </tr>
+            <tr>
+                <td><span class="pill HIGH">HIGH</span></td>
+                <td><b>[DF001]</b> Avoid :latest tag</td>
+                <td>Using ':latest' is unpredictable — the image changes silently over time.</td>
+                <td>Line 4<br><code>FROM ubuntu:latest</code></td>
+                <td class="fix-col">Pin to a specific version, e.g.  FROM nginx:1.25.3</td>
+            </tr>
+            <tr>
+                <td><span class="pill HIGH">HIGH</span></td>
+                <td><b>[DF008]</b> sudo used in RUN</td>
+                <td>Using sudo inside a container is unnecessary and increases attack surface.</td>
+                <td>Line 18<br><code>RUN sudo chmod 777 /app</code></td>
+                <td class="fix-col">Use USER root sparingly or switch users properly.</td>
+            </tr>
+            <tr>
+                <td><span class="pill HIGH">HIGH</span></td>
+                <td><b>[DF004]</b> No USER instruction found</td>
+                <td>No USER instruction detected — container will run as root by default.</td>
+                <td>—<br>—</td>
+                <td class="fix-col">Add  USER &lt;non-root-user&gt;  before the CMD/ENTRYPOINT instruction.</td>
+            </tr>
+            <tr>
+                <td><span class="pill MEDIUM">MEDIUM</span></td>
+                <td><b>[DF009]</b> chmod 777 detected</td>
+                <td>World-writable permissions allow any process to modify critical files.</td>
+                <td>Line 18<br><code>RUN sudo chmod 777 /app</code></td>
+                <td class="fix-col">Use the minimum permissions needed, e.g.  chmod 755</td>
+            </tr>
+            <tr>
+                <td><span class="pill MEDIUM">MEDIUM</span></td>
+                <td><b>[DF010]</b> Package cache not cleaned</td>
+                <td>Leaving apt cache bloats the image and increases the attack surface.</td>
+                <td>Line 12<br><code>RUN apt-get update &amp;&amp; apt-get install -y curl python3</code></td>
+                <td class="fix-col">Add  &amp;&amp; rm -rf /var/lib/apt/lists/*  at the end of your apt-get install line.</td>
+            </tr>
+            <tr>
+                <td><span class="pill LOW">LOW</span></td>
+                <td><b>[DF011]</b> ADD used instead of COPY</td>
+                <td>ADD has implicit behaviors (auto-extraction). COPY is safer and more explicit.</td>
+                <td>Line 21<br><code>ADD ./myapp /app</code></td>
+                <td class="fix-col">Replace  ADD  with  COPY  unless you specifically need URL fetching or auto-extraction.</td>
+            </tr>
+            <tr>
+                <td><span class="pill INFO">INFO</span></td>
+                <td><b>[DF012]</b> No HEALTHCHECK instruction</td>
+                <td>Without a HEALTHCHECK, Docker cannot automatically detect if your app is broken.</td>
+                <td>—<br>—</td>
+                <td class="fix-col">Add:  HEALTHCHECK CMD curl -f http://localhost/ || exit 1</td>
+            </tr></tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

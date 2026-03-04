@@ -1,0 +1,33 @@
+# ✅  THIS IS A GOOD DOCKERFILE — showing best practices
+
+# Pin to a specific version (not :latest)
+FROM python:3.11.7-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements first (better Docker layer caching)
+COPY requirements.txt .
+
+# Install dependencies and clean up cache in one layer
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gcc \
+    && pip install --no-cache-dir -r requirements.txt \
+    && apt-get purge -y gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy application code
+COPY ./src /app
+
+# Create a non-root user and switch to it
+RUN useradd -r -u 1001 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Add a health check
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+# Expose only the needed port
+EXPOSE 8080
+
+CMD ["python3", "main.py"]
